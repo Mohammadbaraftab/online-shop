@@ -43,3 +43,6 @@ class UserRegistrationForm(forms.Form):
     phone_number = forms.CharField(label="phone number", max_length=11)
     password = forms.CharField(widget=forms.PasswordInput)
 
+
+class VerifyCodeForm(forms.Form):
+    code = forms.IntegerField()
