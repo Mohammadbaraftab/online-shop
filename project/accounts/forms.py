@@ -43,6 +43,19 @@ class UserRegistrationForm(forms.Form):
     phone_number = forms.CharField(label="phone number", max_length=11)
     password = forms.CharField(widget=forms.PasswordInput)
 
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        if User.objects.filter(email = email).exists():
+            raise ValidationError("This email already exist")
+        return email
+    
+    def clean_phone(self):
+        phone = self.cleaned_data["phone_number"]
+        if User.objects.filter(phone_number = phone).exists():
+            raise ValidationError("This phone number already exist")
+        return phone
+
+
 
 class VerifyCodeForm(forms.Form):
     code = forms.IntegerField()
