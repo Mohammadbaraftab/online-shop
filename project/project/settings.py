@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "category.apps.CategoryConfig",
     "product.apps.ProductConfig",
+    "storages",
 ]
 
 MIDDLEWARE = [
@@ -136,3 +137,23 @@ MEDIA_URL = '/media/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = "accounts.User"
+
+#ARVAN CLOUD STORAGES
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# AWS_ACCESS_KEY_ID = "c4025bd2-049f-4124-a0bf-b5801bb5ef1f"
+# AWS_SECRET_ACCESS_KEY = "34d37be8ac7147202b25eeb363c01227904392688e12989317909a2c3ec0f830"
+# AWS_S3_ENDPOINT_URL = "s3.ir-thr-at1.arvanstorage.ir"
+# AWS_STORAGE_BUCKET_NAME = "mohammad-django-shop"
+# AWS_SERVIC_NAME = "S3"
+# AWS_S3_FILE_OVERWRITE = False
+
+#ARVAN CLOUD STORAGES
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+AWS_ACCESS_KEY_ID = "c4025bd2-049f-4124-a0bf-b5801bb5ef1f"
+AWS_SECRET_ACCESS_KEY = "34d37be8ac7147202b25eeb363c01227904392688e12989317909a2c3ec0f830"
+AWS_S3_ENDPOINT_URL = "https://s3.ir-thr-at1.arvanstorage.ir"
+AWS_STORAGE_BUCKET_NAME = "mohammad-django-shop"
+AWS_S3_REGION_NAME = "us-east-1"  
+AWS_S3_FILE_OVERWRITE = False
+AWS_SERVIC_NAME = "S3"
