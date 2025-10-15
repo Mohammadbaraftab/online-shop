@@ -11,7 +11,7 @@ class HomeView(View):
     template_name = "home/home.html"
     
     def get(self, request, slug=None):
-        categories = Category.objects.filter(is_child_category = False)
+        categories = Category.objects.filter(is_sub_category = False)
         products = Product.objects.filter(available=True)
         
         if slug:
