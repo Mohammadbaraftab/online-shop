@@ -37,11 +37,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    #Local apps
     "home.apps.HomeConfig",
     "accounts.apps.AccountsConfig",
     "category.apps.CategoryConfig",
     "product.apps.ProductConfig",
+    "orders.apps.OrdersConfig",
+
+    #Third-party apps
     "storages",
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -67,6 +73,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                #Local Context Processors
+
+                "orders.context_processors.cart",
+                
             ],
         },
     },
@@ -110,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tehran'
 
 USE_I18N = True
 
@@ -138,14 +148,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = "accounts.User"
 
-#ARVAN CLOUD STORAGES
-# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-# AWS_ACCESS_KEY_ID = "c4025bd2-049f-4124-a0bf-b5801bb5ef1f"
-# AWS_SECRET_ACCESS_KEY = "34d37be8ac7147202b25eeb363c01227904392688e12989317909a2c3ec0f830"
-# AWS_S3_ENDPOINT_URL = "s3.ir-thr-at1.arvanstorage.ir"
-# AWS_STORAGE_BUCKET_NAME = "mohammad-django-shop"
-# AWS_SERVIC_NAME = "S3"
-# AWS_S3_FILE_OVERWRITE = False
 
 #ARVAN CLOUD STORAGES
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
@@ -153,6 +155,8 @@ AWS_ACCESS_KEY_ID = "c4025bd2-049f-4124-a0bf-b5801bb5ef1f"
 AWS_SECRET_ACCESS_KEY = "34d37be8ac7147202b25eeb363c01227904392688e12989317909a2c3ec0f830"
 AWS_S3_ENDPOINT_URL = "https://s3.ir-thr-at1.arvanstorage.ir"
 AWS_STORAGE_BUCKET_NAME = "mohammad-django-shop"
-AWS_S3_REGION_NAME = "us-east-1"  
 AWS_S3_FILE_OVERWRITE = False
-AWS_SERVIC_NAME = "S3"
+AWS_SERVICE_NAME = "s3"
+
+AWS_LOCAL_STORAGE = f"{BASE_DIR}/aws/"
+

@@ -6,6 +6,12 @@
     <small>{{product.created}}</small><br>
     <p>{{product.price}} Tomans</p> 
     <img src="{{product.image.url}}" alt="" width="300" height="200">
-    <p>{{product.description}}</p>
+    <p>{{product.description}}</p></br>
+
+    <form action="{% url "orders:add_cart" product.id%}" method="post">
+        {% csrf_token %}
+        {{ form }} 
+        <button type="submit">Add to Cart</button>
+    </form>
 {% endblock content %}
 
