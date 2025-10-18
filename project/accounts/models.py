@@ -1,9 +1,11 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth.models import (AbstractBaseUser, 
+                                        PermissionsMixin
+                                        )
 from.managers import UserManager
 
 
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, PermissionsMixin):
     email = models.CharField(verbose_name="email address", max_length=200, unique=True)
     phone_number = models.CharField(verbose_name= "phone number", max_length=11, unique=True)
     full_name = models.CharField(max_length=200)
@@ -18,11 +20,7 @@ class User(AbstractBaseUser):
     def __str__(self):
         return self.email
     
-    def has_perm(delf, perm, object = None):
-        return True
     
-    def has_module_perms(self, app_label):
-        return True
     
     @property
     def is_staff(self):

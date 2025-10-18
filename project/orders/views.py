@@ -3,9 +3,18 @@ from django.views import View
 from .cart import Cart
 from product.models import Product
 from .forms import CartAddForm
-from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import Order, OrderItem
-
+from django.contrib.auth.mixins import (
+      									LoginRequiredMixin, 
+                                        PermissionRequiredMixin
+										)
+from .models import Order, OrderItem, Coupan
+import requests
+from django.http import HttpResponse
+import json
+from .forms import DiscuntCodeForm
+import datetime
+from django.contrib import messages
+from django.core.exceptions import PermissionDenied
 
 
 class CartView(View):
@@ -19,16 +28,25 @@ class CartView(View):
     
 
 class CartAddView(View):
-
+    #permission_required = ("orders.add_order", )
+    
+    
+    """
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.has_perm("orders.add_order"):
+            raise PermissionDenied()
+        return super().dispatch(request, *args, **kwargs)
+		"""
+    
     def post(self, request, product_id):
-        product = get_object_or_404(Product, id = product_id)
+        product = get_object_or_404(Product, id=product_id)
         cart = Cart(request)
         form = CartAddForm(request.POST)
         if form.is_valid():
             cleaned_data = form.cleaned_data
             cart.add(product=product, quantity=cleaned_data["quantity"])
         return redirect("orders:cart")
-        
+
 
 class CartRemoveView(View):
 
@@ -41,10 +59,11 @@ class CartRemoveView(View):
 
 class OrderDetailView(LoginRequiredMixin, View):
     template_name = "orders/order.html"
+    form_class = DiscuntCodeForm
 
     def get(self, request, order_id):
         order = get_object_or_404(Order, id = order_id)
-        context = {"order":order}
+        context = {"order":order, "form":self.form_class}
         return render(request, self.template_name, context)
 
 
@@ -63,3 +82,104 @@ class OrderCreateView(LoginRequiredMixin, View):
             )
         cart.clear()
         return redirect("orders:order_detail", order.id)
+
+
+class OrderDiscountView(LoginRequiredMixin, View):
+    form_class = DiscuntCodeForm
+	
+    def post(self, request, order_id):
+            now = datetime.datetime.now()
+            form = self.form_class(request.POST)
+            if form.is_valid():
+                cleaned_data = form.cleaned_data
+                code = cleaned_data["code"]
+                try:
+                      coupan = Coupan.objects.get(
+                            code__exact = code,
+                            valid_from__lte = now,
+                            valid_to__gte = now,
+                            is_active = True
+                            )
+                except Coupan.DoesNotExist:
+                      messages.error(request, "This coupan does not exist", extra_tags="danger")
+                      return redirect("orders:order_detail", order_id)
+                order = Order.objects.get(id = order_id)
+                order.discount = coupan.discount
+                order.save()
+            return redirect("orders:order_detail", order_id)
+                      
+
+#=====================zarinpal configurations================================
+
+MERCHANT = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+ZP_API_REQUEST = "https://api.zarinpal.com/pg/v4/payment/request.json"
+ZP_API_VERIFY = "https://api.zarinpal.com/pg/v4/payment/verify.json"
+ZP_API_STARTPAY = "https://www.zarinpal.com/pg/StartPay/{authority}"
+description = "توضیحات مربوط به تراکنش را در این قسمت وارد کنید"
+CallbackURL = 'http://127.0.0.1:8000/orders/verify/'
+
+class OrderPayView(LoginRequiredMixin, View):
+	def get(self, request, order_id):
+		order = Order.objects.get(id=order_id)
+		request.session['order_pay'] = {
+			'order_id': order.id,
+		}
+		req_data = {
+			"merchant_id": MERCHANT,
+			"amount": order.get_total_price(),
+			"callback_url": CallbackURL,
+			"description": description,
+			"metadata": {"mobile": request.user.phone_number, "email": request.user.email}
+		}
+		req_header = {"accept": "application/json",
+					  "content-type": "application/json'"}
+		req = requests.post(url=ZP_API_REQUEST, data=json.dumps(
+			req_data), headers=req_header)
+		authority = req.json()['data']['authority']
+		if len(req.json()['errors']) == 0:
+			return redirect(ZP_API_STARTPAY.format(authority=authority))
+		else:
+			e_code = req.json()['errors']['code']
+			e_message = req.json()['errors']['message']
+			return HttpResponse(f"Error code: {e_code}, Error Message: {e_message}")
+          
+
+class OrderVerifyView(LoginRequiredMixin, View):
+	def get(self, request):
+		order_id = request.session['order_pay']['order_id']
+		order = Order.objects.get(id=int(order_id))
+		t_status = request.GET.get('Status')
+		t_authority = request.GET['Authority']
+		if request.GET.get('Status') == 'OK':
+			req_header = {"accept": "application/json",
+						  "content-type": "application/json'"}
+			req_data = {
+				"merchant_id": MERCHANT,
+				"amount": order.get_total_price(),
+				"authority": t_authority
+			}
+			req = requests.post(url=ZP_API_VERIFY, data=json.dumps(req_data), headers=req_header)
+			if len(req.json()['errors']) == 0:
+				t_status = req.json()['data']['code']
+				if t_status == 100:
+					order.is_paid = True
+					order.save()
+					return HttpResponse('Transaction success.\nRefID: ' + str(
+						req.json()['data']['ref_id']
+					))
+				elif t_status == 101:
+					return HttpResponse('Transaction submitted : ' + str(
+						req.json()['data']['message']
+					))
+				else:
+					return HttpResponse('Transaction failed.\nStatus: ' + str(
+						req.json()['data']['message']
+					))
+			else:
+				e_code = req.json()['errors']['code']
+				e_message = req.json()['errors']['message']
+				return HttpResponse(f"Error code: {e_code}, Error Message: {e_message}")
+		else:
+			return HttpResponse('Transaction failed or canceled by user')
+
+

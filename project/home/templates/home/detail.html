@@ -6,7 +6,7 @@
     <small>{{product.created}}</small><br>
     <p>{{product.price}} Tomans</p> 
     <img src="{{product.image.url}}" alt="" width="300" height="200">
-    <p>{{product.description}}</p></br>
+    <p>{{product.description|safe}}</p></br>
 
     <form action="{% url "orders:add_cart" product.id%}" method="post">
         {% csrf_token %}

@@ -2,5 +2,15 @@
 
 {% block content %}
     <h3> Checkout</h3>
-    <p>{{ order.get_total_price }}</p>
+    <p>Total Price: {{ order.get_total_price }}</p>
+    
+   <a href="{% url "orders:order_pay" order.id %}" class="btn btn-danger" style="width: 100px;">Pay</a>
+    <br/><br/>
+   <form action="{% url "orders:order_discount" order.id %}" method = "post">
+        {% csrf_token %}
+        {{form.as_p}}
+        <button type="submit">Apply</button>
+
+   </form>
+
 {% endblock content %}

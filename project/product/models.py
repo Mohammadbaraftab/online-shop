@@ -1,6 +1,7 @@
 from django.db import models
 from category.models import Category  
 from django.urls import reverse
+from ckeditor.fields import RichTextField
 
 
 class Product(models.Model):
@@ -9,7 +10,7 @@ class Product(models.Model):
     slug = models.SlugField(max_length=200, unique=True)
     image = models.ImageField()
     price = models.IntegerField()
-    description = models.TextField(blank=True)
+    description = RichTextField()
     available = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

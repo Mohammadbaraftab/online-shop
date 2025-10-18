@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     #Third-party apps
     "storages",
     "django_celery_beat",
+    "ckeditor",
 ]
 
 MIDDLEWARE = [
@@ -90,10 +91,24 @@ WSGI_APPLICATION = 'project.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'baraftab_shop',
+        'USER': 'baraftab',
+        'PASSWORD': 'msh632825',
+        'HOST': 'localhost',  # or your server IP if remote
+        'PORT': '5432',       # default PostgreSQL port
     }
 }
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+    }
+}
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 
 # Password validation
@@ -159,4 +174,13 @@ AWS_S3_FILE_OVERWRITE = False
 AWS_SERVICE_NAME = "s3"
 
 AWS_LOCAL_STORAGE = f"{BASE_DIR}/aws/"
+
+
+#CKEDITOR CONFIG
+
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+    },
+}
 
